@@ -7,6 +7,7 @@
 #define NODE_GEOIP_GLOBAL_H
 
 #include <v8.h>
+#include <iconv.h>
 
 #define REQ_FUN_ARG(I, VAR)                                             \
   if ((args.Length() + 1) <= (I) || !args[I]->IsFunction())             \
@@ -16,5 +17,21 @@
 
 // Extracts a C string from a V8 Utf8Value.
 extern const char* ToCString(const v8::String::Utf8Value& value);
+
+static iconv_t cd;
+
+#ifndef ICONV_SRC_CONST
+#define ICONV_SRC_CONST
+#endif
+#define icv(a,b,blen) do {                                          \
+  if(cd==NULL) cd=iconv_open("utf-8", "ISO-8859-1");                \
+  ICONV_SRC_CONST char *in = a;                                     \
+  char *out = b;                                                    \
+  size_t inlen = strlen(a);                                         \
+  size_t outlen = blen;                                             \
+  if(iconv(cd, &in, &inlen, &out, &outlen) == -1) b[0] = '\0';      \
+  else *out = '\0';                                                 \
+} while(0)
+
 
 #endif /* NODE_GEOIP_GLOBAL_H */

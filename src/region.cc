@@ -106,7 +106,7 @@ Handle<Value> geoip::Region::lookup(const Arguments& args)
   baton->r = r;
   host_str->WriteAscii(baton->host_cstr);
   baton->increment_by = 2;
-  baton->sleep_for = 1;
+  baton->sleep_for = 0;
   baton->cb = Persistent<Function>::New(cb);
 
   r->Ref();

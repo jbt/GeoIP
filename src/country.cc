@@ -140,7 +140,7 @@ Handle<Value> geoip::Country::lookup(const Arguments& args)
   baton->c = c;
   host_str->WriteAscii(baton->host_cstr);
   baton->increment_by = 2;
-  baton->sleep_for = 1;
+  baton->sleep_for = 0;
   baton->cb = Persistent<Function>::New(cb);
 
   c->Ref();

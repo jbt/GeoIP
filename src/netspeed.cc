@@ -110,7 +110,7 @@ Handle<Value> geoip::NetSpeed::lookup(const Arguments& args)
   baton->n = n;
   host_str->WriteAscii(baton->host_cstr);
   baton->increment_by = 2;
-  baton->sleep_for = 1;
+  baton->sleep_for = 0;
   baton->cb = Persistent<Function>::New(cb);
 
   n->Ref();

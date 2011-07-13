@@ -87,7 +87,10 @@ Handle<Value> geoip::Org::lookupSync(const Arguments &args) {
     return scope.Close(Null());
   }
 
-  data = String::New(org);
+  char convertbuff[1024];
+  icv(org, convertbuff, sizeof(convertbuff));
+
+  data = String::New(convertbuff);
   return scope.Close(data);
 }
 
@@ -105,7 +108,7 @@ Handle<Value> geoip::Org::lookup(const Arguments& args)
   baton->o = o;
   host_str->WriteAscii(baton->host_cstr);
   baton->increment_by = 2;
-  baton->sleep_for = 1;
+  baton->sleep_for = 0;
   baton->cb = Persistent<Function>::New(cb);
 
   o->Ref();
@@ -146,7 +149,9 @@ int geoip::Org::EIO_AfterOrg(eio_req *req)
     argv[0] = Exception::Error(String::New("Data not found"));
     argv[1] = Null();
   } else {
-    Local<String> data = String::New(baton->org);
+	  char convertbuff[1024];
+  icv(baton->org, convertbuff, sizeof(convertbuff));
+    Local<String> data = String::New(convertbuff);
 
     argv[0] = Null();
     argv[1] = data;
