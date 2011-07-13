@@ -7,6 +7,7 @@
 #include "city.h"
 #include "global.h"
 
+
 Persistent<FunctionTemplate> geoip::City::constructor_template; 
 
 void geoip::City::Init(Handle<Object> target)
@@ -78,6 +79,8 @@ Handle<Value> geoip::City::lookupSync(const Arguments &args) {
     return scope.Close(Null());
   }
 
+  char convertbuff[1024];
+
   GeoIPRecord * record = GeoIP_record_by_ipnum(c->db, ipnum);
 
   if (record == NULL) {
@@ -93,14 +96,16 @@ Handle<Value> geoip::City::lookupSync(const Arguments &args) {
   }
 
   if (record->country_name != NULL) {
-    data->Set(String::NewSymbol("country_name"), String::New(record->country_name));
+    icv(record->country_name, convertbuff, sizeof(convertbuff));
+    data->Set(String::NewSymbol("country_name"), String::New(convertbuff));
   }
 
   if (record->region != NULL ) {
     data->Set(String::NewSymbol("region"), String::New(record->region));
   }
   if (record->city != NULL) {
-    data->Set(String::NewSymbol("city"), String::New(record->city));
+    icv(record->city, convertbuff, sizeof(convertbuff));
+    data->Set(String::NewSymbol("city"), String::New(convertbuff));
   }
 
   if (record->postal_code != NULL) {
@@ -148,7 +153,7 @@ Handle<Value> geoip::City::lookup(const Arguments& args)
   baton->c = c;
   host_str->WriteAscii(baton->host_cstr);
   baton->increment_by = 2;
-  baton->sleep_for = 1;
+  baton->sleep_for = 0;
   baton->cb = Persistent<Function>::New(cb);
 
   c->Ref();
@@ -183,6 +188,8 @@ int geoip::City::EIO_AfterCity(eio_req *req)
   ev_unref(EV_DEFAULT_UC);
   baton->c->Unref();
 
+  char convertbuff[1024];
+
   Handle<Value> argv[2];
   if (baton->record == NULL) {
     argv[0] = Exception::Error(String::New("Data not found"));
@@ -198,16 +205,18 @@ int geoip::City::EIO_AfterCity(eio_req *req)
     }
 
     if (baton->record->country_name != NULL) {
-      data->Set(String::NewSymbol("country_name"), String::New(baton->record->country_name));
-    }
+       icv(baton->record->country_name, convertbuff, sizeof(convertbuff));
+    data->Set(String::NewSymbol("country_name"), String::New(convertbuff));
+ }
 
     if (baton->record->region != NULL ) {
       data->Set(String::NewSymbol("region"), String::New(baton->record->region));
     }
 
     if (baton->record->city != NULL) {
-      data->Set(String::NewSymbol("city"), String::New(baton->record->city));
-    }                                                                       
+      icv(baton->record->city, convertbuff, sizeof(convertbuff));
+    data->Set(String::NewSymbol("city"), String::New(convertbuff));
+  }                                                                       
 
     if (baton->record->postal_code != NULL) {
       data->Set(String::NewSymbol("postal_code"), String::New(baton->record->postal_code));
